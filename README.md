@@ -52,9 +52,9 @@ graph TD
     WP -->|Koneksi DB Internal| DB
     PMA -->|Manajemen DB Internal| DB
     
-    style DB fill:#ffcccc,stroke:#ff0000,stroke-width:2px
-    style WP fill:#cce5ff,stroke:#004085,stroke-width:2px
-    style PMA fill:#d4edda,stroke:#155724,stroke-width:2px
+    style DB fill:#ffcccc,stroke:#ff0000,stroke-width:2px,color:#000
+    style WP fill:#cce5ff,stroke:#004085,stroke-width:2px,color:#000
+    style PMA fill:#d4edda,stroke:#155724,stroke-width:2px,color:#000
 ```
 
 ---
