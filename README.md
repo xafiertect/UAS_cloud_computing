@@ -1,5 +1,5 @@
 # 🌐 Secure WordPress Deployment with Docker Compose
-> **Milestone 1 - Ujian Akhir Semester (UAS) Cloud Computing**  
+> **Milestone 1 & 2 - Ujian Akhir Semester (UAS) Cloud Computing**  
 > *Teknik Informatika - Semester 4*
 
 <p align="center">
@@ -7,6 +7,8 @@
   <img src="https://img.shields.io/badge/WordPress-21759B?style=for-the-badge&logo=wordpress&logoColor=white" alt="WordPress" />
   <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
   <img src="https://img.shields.io/badge/phpMyAdmin-F89820?style=for-the-badge&logo=phpmyadmin&logoColor=white" alt="phpMyAdmin" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white" alt="MinIO" />
   <img src="https://img.shields.io/badge/GNU_Bash-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white" alt="Bash" />
   <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux" />
 </p>
@@ -60,11 +62,18 @@ graph TD
 ---
 
 ## 🛠️ Stack Teknologi (Tech Stack)
+
+### Milestone 1
 * **Containerization**: Docker & Docker Compose
 * **Application**: WordPress v6.5 (Apache base image)
 * **Database**: MySQL v8.0 (Persistent Volume)
 * **Database Tool**: phpMyAdmin v5.2
 * **Scripting**: Bash (Automated project bootstrap)
+
+### Milestone 2
+* **Object Cache**: Redis v7-alpine (Redis Object Cache plugin)
+* **Object Storage**: MinIO Community Edition (S3-compatible)
+* **Media Plugin**: WP Offload Media Lite v3.3.1
 
 ---
 
@@ -127,6 +136,43 @@ Guna menjamin keandalan sistem sebelum pengumpulan, tim QA melakukan serangkaian
 ---
 
 ## 🔒 Fitur Keamanan & Best Practice
-* **Non-Root Database Port**: Port standard database MySQL `3060` tidak diekspos ke publik atau host eksternal untuk menghindari serangan brute-force.
-* **Strict Dependencies with Healthchecks**: WordPress tidak akan dijalankan sebelum basis data MySQL melaporkan status siap (`healthy`).
+* **Non-Root Database Port**: Port standard database MySQL `3306` tidak diekspos ke publik atau host eksternal untuk menghindari serangan brute-force.
+* **Strict Dependencies with Healthchecks**: WordPress tidak akan dijalankan sebelum basis data MySQL dan Redis melaporkan status siap (`healthy`).
 * **Kredensial Terisolasi**: Penggunaan environment variable (`.env`) dinamis mencegah bocornya data sensitif (password root) ke repositori publik.
+* **Redis Auth**: Redis dikonfigurasi dengan password wajib (`requirepass`) sehingga tidak bisa diakses tanpa autentikasi.
+* **MinIO Access Key**: WordPress menggunakan service account key tersendiri, bukan root credentials MinIO.
+
+---
+
+## 📸 Dokumentasi Milestone 2
+
+### WordPress (localhost:8080)
+> WordPress berhasil berjalan dan dapat diakses melalui browser.
+
+![WordPress Homepage](wordpress-docker/doc%20milestone%202/localhost:8080page.png)
+
+---
+
+### phpMyAdmin (localhost:8081)
+> phpMyAdmin terhubung ke MySQL dan menampilkan database `wordpress_db`.
+
+![phpMyAdmin Dashboard](wordpress-docker/doc%20milestone%202/localhost:8081.png)
+
+---
+
+### MinIO Object Store (localhost:9003)
+> MinIO berhasil berjalan dengan bucket `wordpress-media` sudah dibuat dan berstatus **PUBLIC**.
+
+![MinIO Dashboard](wordpress-docker/doc%20milestone%202/localhost:9003.png)
+
+---
+
+## 🗂️ Arsitektur Milestone 2 — Service Lengkap
+
+| Service | Container | Image | Port Host | Jaringan |
+|---------|-----------|-------|-----------|----------|
+| MySQL | `mysql_db` | `mysql:8.0` | — (internal) | `backend-net` |
+| WordPress | `wordpress_app` | `wordpress:6.5-apache` | `8080` | `frontend-net`, `backend-net` |
+| phpMyAdmin | `phpmyadmin_gui` | `phpmyadmin:5.2` | `8081` | `backend-net` |
+| Redis | `wp_redis` | `redis:7-alpine` | — (internal) | `backend-net` |
+| MinIO | `wp_minio` | `minio/minio:latest` | `9002` (API), `9003` (Dashboard) | `frontend-net`, `backend-net` |
