@@ -1,6 +1,6 @@
 # 🌐 Secure WordPress Deployment with Docker Compose
 > **Milestone 1 - Ujian Akhir Semester (UAS) Cloud Computing**  
-> *Teknik Informatika - Semester 5*
+> *Teknik Informatika - Semester 4*
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
