@@ -14,8 +14,8 @@
 ---
 
 ## 👥 Tim Pengembang (Contributors)
-* **Rizqi Maulidiyah** - *Lead DevOps & Cloud Engineer* (NIM: 123456781)
-* **Alfin Ardiansyah** - *QA Engineer & Technical Writer* (NIM: 123456782)
+* **Rizqi Maulidiyah** - *Lead DevOps & Cloud Engineer* 
+* **Alfin Ardiansyah** - *QA Engineer & Technical Writer* 
 
 ---
 
