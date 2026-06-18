@@ -30,11 +30,36 @@ services:
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_REDIS_HOST', 'redis');
+        define('WP_REDIS_PORT', 6379);
+        define('WP_REDIS_PASSWORD', '${REDIS_PASSWORD}');
+        define('WP_REDIS_TIMEOUT', 1);
+        define('WP_REDIS_READ_TIMEOUT', 1);
+        define('WP_REDIS_DATABASE', 0);
+        define('AS3CF_SETTINGS', serialize(array(
+          'provider' => 'generic',
+          'access-key-id' => '${MINIO_ACCESS_KEY}',
+          'secret-access-key' => '${MINIO_SECRET_KEY}',
+          'bucket' => '${MINIO_BUCKET}',
+          'region' => 'us-east-1',
+          'endpoint' => 'http://wp_minio:9000',
+          'force-https' => false,
+          'use-bucket-acls' => false,
+          'object-acl' => 'public-read',
+          'delivery-provider' => 'storage',
+          'delivery-provider-url-signed' => false,
+          'use-object-versioning' => false,
+          'remove-local-file' => false,
+          'serve-from-s3' => true,
+        )));
     networks:
       - frontend-net
       - backend-net
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   phpmyadmin:
@@ -51,8 +76,51 @@ services:
       db:
         condition: service_healthy
 
+  minio:
+    image: minio/minio:latest
+    container_name: wp_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    networks:
+      - backend-net
+      - frontend-net
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: wp_redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
     driver: local
 
 networks:
