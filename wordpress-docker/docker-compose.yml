@@ -4,16 +4,16 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: secure_root_password
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: secure_user_password
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecure_root_password"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,22 +26,22 @@ services:
     ports:
       - "8080:80"
     environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
-      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
-      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: secure_user_password
+      WORDPRESS_DB_NAME: wordpress_db
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_REDIS_HOST', 'redis');
         define('WP_REDIS_PORT', 6379);
-        define('WP_REDIS_PASSWORD', '${REDIS_PASSWORD}');
+        define('WP_REDIS_PASSWORD', 'redis_password');
         define('WP_REDIS_TIMEOUT', 1);
         define('WP_REDIS_READ_TIMEOUT', 1);
         define('WP_REDIS_DATABASE', 0);
         define('AS3CF_SETTINGS', serialize(array(
           'provider' => 'generic',
-          'access-key-id' => '${MINIO_ACCESS_KEY}',
-          'secret-access-key' => '${MINIO_SECRET_KEY}',
-          'bucket' => '${MINIO_BUCKET}',
+          'access-key-id' => 'minio_access_key',
+          'secret-access-key' => 'minio_secret_key',
+          'bucket' => 'wordpress-bucket',
           'region' => 'us-east-1',
           'endpoint' => 'http://wp_minio:9000',
           'force-https' => false,
@@ -69,7 +69,7 @@ services:
     ports:
       - "8081:80"
     environment:
-      PMA_HOST: ${PMA_HOST}
+      PMA_HOST: db
     networks:
       - backend-net
     depends_on:
@@ -85,8 +85,8 @@ services:
       - "9002:9000"
       - "9003:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: minioroot
+      MINIO_ROOT_PASSWORD: minio_root_password
     volumes:
       - minio_data:/data
     networks:
@@ -103,13 +103,13 @@ services:
     image: redis:7-alpine
     container_name: wp_redis
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass redis_password
     volumes:
       - redis_data:/data
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "redis_password", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
