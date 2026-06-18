@@ -87,7 +87,7 @@ wordpress-docker/
 ├── .gitignore                # Mengabaikan file sensitif agar tidak terunggah ke Git
 ├── docker-compose.yml        # Berkas orkestrasi Docker Compose utama
 ├── README.md                 # Dokumentasi portofolio proyek
-└── kontribusi-anggota.txt    # Tabel pembagian tugas internal kelompok
+└── kontribusi-anggota.md     # Tabel pembagian tugas internal kelompok
 ```
 
 ---
