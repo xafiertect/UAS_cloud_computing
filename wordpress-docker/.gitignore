@@ -1,0 +1,10 @@
+# Environment variables
+.env
+
+# WordPress & MySQL local/temporary files
+wordpress-docker/mysql/
+wordpress-docker/wordpress/
+
+# OS specific files
+.DS_Store
+Thumbs.db
