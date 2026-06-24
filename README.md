@@ -1,5 +1,5 @@
 # 🌐 Secure WordPress Deployment with Docker Compose
-> **Milestone 1 & 2 - Ujian Akhir Semester (UAS) Cloud Computing**  
+> **Milestone 1, 2 & 3 - Ujian Akhir Semester (UAS) Cloud Computing**  
 > *Teknik Informatika - Semester 4*
 
 <p align="center">
@@ -74,6 +74,11 @@ graph TD
 * **Object Cache**: Redis v7-alpine (Redis Object Cache plugin)
 * **Object Storage**: MinIO Community Edition (S3-compatible)
 * **Media Plugin**: WP Offload Media Lite v3.3.1
+
+### Milestone 3
+* **Environment Configuration**: `.env` & `.env.example` untuk manajemen kredensial seluruh service
+* **Container Inspection**: `docker inspect` untuk verifikasi environment variables tiap kontainer
+* **Container Health Testing**: `docker compose ps` untuk validasi status dan port seluruh service
 
 ---
 
@@ -169,10 +174,81 @@ Guna menjamin keandalan sistem sebelum pengumpulan, tim QA melakukan serangkaian
 
 ## 🗂️ Arsitektur Milestone 2 — Service Lengkap
 
-| Service | Container | Image | Port Host | Jaringan |
-|---------|-----------|-------|-----------|----------|
-| MySQL | `mysql_db` | `mysql:8.0` | — (internal) | `backend-net` |
-| WordPress | `wordpress_app` | `wordpress:6.5-apache` | `8080` | `frontend-net`, `backend-net` |
-| phpMyAdmin | `phpmyadmin_gui` | `phpmyadmin:5.2` | `8081` | `backend-net` |
-| Redis | `wp_redis` | `redis:7-alpine` | — (internal) | `backend-net` |
-| MinIO | `wp_minio` | `minio/minio:latest` | `9002` (API), `9003` (Dashboard) | `frontend-net`, `backend-net` |
+| Service    | Container        | Image                    | Port Host                        | Jaringan                          |
+|------------|------------------|--------------------------|----------------------------------|-----------------------------------|
+| MySQL      | `mysql_db`       | `mysql:8.0`              | — (internal)                     | `backend-net`                     |
+| WordPress  | `wordpress_app`  | `wordpress:6.5-apache`   | `8080`                           | `frontend-net`, `backend-net`     |
+| phpMyAdmin | `phpmyadmin_gui` | `phpmyadmin:5.2`         | `8081`                           | `backend-net`                     |
+| Redis      | `wp_redis`       | `redis:7-alpine`         | — (internal)                     | `backend-net`                     |
+| MinIO      | `wp_minio`       | `minio/minio:latest`     | `9002` (API), `9003` (Dashboard) | `frontend-net`, `backend-net`     |
+
+---
+
+## 📸 Dokumentasi Milestone 3
+
+### Environment Variables — `.env`
+> File `.env` dikonfigurasi dengan kredensial seluruh service: MySQL, Redis, MinIO, dan WordPress.
+
+![Environment Variables (.env)](wordpress-docker/doc%20milestone%203/environment%20variables%20(.env).png)
+
+---
+
+### Template Publik — `.env.example`
+> File `.env.example` disusun sebagai template distribusi publik yang aman (tanpa kredensial nyata).
+
+![.env.example](wordpress-docker/doc%20milestone%203/env_example.png)
+
+---
+
+### Status Kontainer — `docker compose ps`
+> Seluruh kontainer berstatus `running` dan service dengan healthcheck menunjukkan status `(healthy)`.
+
+![docker compose ps](wordpress-docker/doc%20milestone%203/docker%20compose%20ps.png)
+
+---
+
+### Inspeksi Environment — MySQL
+> Hasil `docker inspect mysql_db` memverifikasi environment variables database terkonfigurasi dengan benar.
+
+![docker inspect MySQL](wordpress-docker/doc%20milestone%203/docker%20inspect%20(env%20mysql).png)
+
+---
+
+### Inspeksi Environment — Redis
+> Hasil `docker inspect wp_redis` memverifikasi konfigurasi autentikasi Redis (`requirepass`).
+
+![docker inspect Redis](wordpress-docker/doc%20milestone%203/docker%20inspect%20(env%20redis).png)
+
+---
+
+### Inspeksi Environment — MinIO
+> Hasil `docker inspect wp_minio` memverifikasi root user dan password MinIO terkonfigurasi.
+
+![docker inspect MinIO](wordpress-docker/doc%20milestone%203/docker%20inspect%20(env%20miniIO).png)
+
+---
+
+### Inspeksi Environment — WordPress
+> Hasil `docker inspect wordpress_app` memverifikasi koneksi database dan konfigurasi Redis/MinIO.
+
+![docker inspect WordPress](wordpress-docker/doc%20milestone%203/docker%20inspect%20(env%20wordpress).png)
+
+---
+
+### Inspeksi Environment — phpMyAdmin
+> Hasil `docker inspect phpmyadmin_gui` memverifikasi konfigurasi `PMA_HOST` mengarah ke service MySQL.
+
+![docker inspect phpMyAdmin](wordpress-docker/doc%20milestone%203/docker%20inspect%20(php%20my%20admin).png)
+
+---
+
+## 🔍 Skenario Pengujian Milestone 3
+
+| Kriteria Uji                    | Metode & Perintah Verifikasi                                                                       | Status Diharapkan                                          |
+|---------------------------------|----------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| **Status Seluruh Kontainer**    | `docker compose ps`                                                                                | Semua kontainer berstatus `running`, service healthcheck `(healthy)` |
+| **Env MySQL**                   | `docker inspect --format='{{json .Config.Env}}' mysql_db`                                         | Menampilkan `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` |
+| **Env Redis**                   | `docker inspect --format='{{json .Config.Env}}' wp_redis`                                         | Menampilkan konfigurasi `requirepass` sesuai `.env`        |
+| **Env MinIO**                   | `docker inspect --format='{{json .Config.Env}}' wp_minio`                                         | Menampilkan `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD`    |
+| **Env WordPress**               | `docker inspect --format='{{json .Config.Env}}' wordpress_app`                                    | Menampilkan `WORDPRESS_DB_*`, `WP_REDIS_*`, dan `AS3CF_SETTINGS` |
+| **Template .env.example**       | `cat .env.example`                                                                                 | Semua value berupa placeholder (tidak ada kredensial nyata) |
